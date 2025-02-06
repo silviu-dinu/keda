@@ -200,11 +200,13 @@ func apiStubHandlerCustomJob(hasRateLeft bool, exceeds30Repos bool, jobResponse 
 			w.WriteHeader(http.StatusOK)
 		}
 		if strings.Contains(r.URL.String(), "/actions/runs?status=") {
+			if strings.Contains(r.URL.String(), "in_progress") {
+				_, _ = w.Write([]byte(testGhWorkflowResponseInProgress)) // nosemgrep: go.lang.security.audit.xss.no-direct-write-to-responsewriter.no-direct-write-to-responsewriter
+				w.WriteHeader(http.StatusOK)
+				return
+			}
 			if strings.Contains(r.URL.String(), "BadRepo") {
 				w.WriteHeader(http.StatusNotFound)
-			} else if strings.Contains(r.URL.String(), "in_progress") {
-				_, _ = w.Write([]byte(testGhWorkflowResponseInProgress))
-				w.WriteHeader(http.StatusOK)
 			} else {
 				_, _ = w.Write(buildQueueJSON())
 				w.WriteHeader(http.StatusOK)
